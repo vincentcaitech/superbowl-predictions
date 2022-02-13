@@ -75,6 +75,13 @@ const getStddev = (arr) => {
 //p1: percent chance this team will beat the proxy team
 //p2: percent chance the opposing team will beat the proxy team
 const getWinChance = (p1,p2) => {
+    return p1<p2?0:1
+    var nd = new jsstats.NormalDistribution(0,1);
+    var a = nd.invCumulativeProbability(p1);
+    var b = nd.invCumulativeProbability(p2);
+    //console.log(a,b);
+    return nd.cumulativeProbability(Math.abs(a-b));
+
     if(Math.abs(p1-p2)>=0.5) return p1<p2?0:1;
     return .5 +(p1-p2);
     let res = 0;
@@ -130,7 +137,8 @@ const generateNextChances = (num) =>{
     else {
         // console.log(chances[hashAbbr(team1,team2)])
         // console.log(team1 + " beats "+ team2 + ": " + chances[hashAbbr(team1,team2)][num]);
-        printRandom(2000);
+        //printRandom(2000);
+        printLine(6,17)
     }
 }
 
@@ -202,4 +210,3 @@ const printMatchups = (abbr1,abbr2) => {
 
 generateInitialGameResults();
 
-//console.log(getWinChance(.61,.60));
