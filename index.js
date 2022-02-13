@@ -2,12 +2,42 @@ const fs = require('fs');
 const jsstats = require("js-stats");
 const teamsList = ["ARI","ATL","BAL","BUF","CAR","CHI","CIN","CLE","DAL","DEN","DET","GBP","HOU","IND","JAX","KCC","LAC","LAR","LVR","MIA","MIN","NEP","NOS","NYG","NYJ","PHI","PIT","SEA","SFR","TBB","TEN","WAS"]; 
 
-const maxIterations = 2000;
-const team1 = "CIN";
-const team2 = "LAR";
+const maxIterations = 100;
 
 var gameResults = {}; //[hash]: array of 2-element arrays of [score of team with lower ID, score of team with higher ID]
 var chances = {}; //chance the lower team ID will beat the higher team ID
+
+const printRandom = (numberToPrint) => {
+    let count = 0;
+    let arr = [];
+    for(let i = 0;i<numberToPrint;i++){
+        let team1 = Math.floor(Math.random()*32);
+        let team2 = Math.floor(Math.random()*32);
+        if(team2==team1){
+            team1--;
+            if(team1<0){
+                team2=1;
+                team1=0;
+            }
+        }
+       
+        let c = printLine(team1,team2);
+        arr.push(c);
+
+    }
+    console.log(count/numberToPrint);
+    console.log(getMean(arr));
+    console.log(getStddev(arr));
+    printLine(6,17);
+}
+
+const printLine = (team1,team2) => {
+    let c = chances[hash(team1,team2)][maxIterations];
+    if(team2<team1) c = 1-c;
+    c *= 100;
+    console.log(teamsList[team1]+" beats "+teamsList[team2]+": "+ c.toFixed(1)+"%");
+    return c;
+}
 
 
 //Team ID is between 0 and 31, in alphabetical order of the three letter abbreviations
@@ -45,7 +75,8 @@ const getStddev = (arr) => {
 //p1: percent chance this team will beat the proxy team
 //p2: percent chance the opposing team will beat the proxy team
 const getWinChance = (p1,p2) => {
-    return p1<p2?0:1;
+    if(Math.abs(p1-p2)>=0.5) return p1<p2?0:1;
+    return .5 +(p1-p2);
     let res = 0;
     res += p1 * p2 /2 //if they both win against proxy, equally likely
     res += p1 * (1-p2) //if this team wins and other team loses against proxy team, then this team wins.
@@ -80,8 +111,8 @@ const generateNextChances = (num) =>{
                 count += 1;
             }
 
-            //TODO: factor in the direct matchup (in the previous num), if there exists one
-            var times = count==0?1:count;
+            //ONLY factor in previous round of this matchup if there is "0" for count;
+            var times = count==0?1:count*num; //OR use count * num, to factor in a majority fraction of a time, every time.
             if(chances[hash(a,b)]&&chances[hash(a,b)][num-1]) cumulativeChance += chances[hash(a,b)][num-1] * times;
             count += times;
             
@@ -97,8 +128,9 @@ const generateNextChances = (num) =>{
 
     if(num<maxIterations) generateNextChances(num+1);
     else {
-        console.log(chances[hashAbbr(team1,team2)])
-        console.log(team1 + " beats "+ team2 + ": " + chances[hashAbbr(team1,team2)][num]);
+        // console.log(chances[hashAbbr(team1,team2)])
+        // console.log(team1 + " beats "+ team2 + ": " + chances[hashAbbr(team1,team2)][num]);
+        printRandom(2000);
     }
 }
 
